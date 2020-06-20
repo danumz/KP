@@ -1,15 +1,14 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Dashboard extends CI_Controller {
-		public function __construct()
-	{
-		parent::__construct();
+class Dashboard extends CI_Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
         is_logged_in();
-              $this->load->model('m_pesan');
-            
-         
-   }
+        $this->load->model('m_pesan');
+    }
 
 
 
@@ -17,73 +16,77 @@ class Dashboard extends CI_Controller {
     {
         $data['title'] = 'Dashboard';
         $data['user'] = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
-        $this->load->model('m_sidebar','sidebar');
+        $this->load->model('m_sidebar', 'sidebar');
 
         $data['sidebar'] = $this->sidebar->getrole();
 
         $data['pesan'] = $this->m_pesan->tampildata('pesan')->result();
-        
-        $this->load->view('templates/header',$data);
-        $this->load->view('templates/sidebar',$data);
-        $this->load->view('templates/topbar',$data);
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('templates/topbar', $data);
         $this->load->view('admin/dashboard');
         $this->load->view('templates/footer');
+    }
 
-      }
 
-
-      public function kirim()
-      {
+    public function kirim()
+    {
         $this->rules();
 
-        if($this->form_validation->run() == FALSE) {
+        if ($this->form_validation->run() == FALSE) {
             $this->index();
-
-        }else{
+        } else {
             $id = $this->input->post('id_pesan');
             $nama = $this->input->post('nama');
             $email = $this->input->post('Email');
             $pesan = $this->input->post('pesan');
 
-        $data =
-        [
-            'nama' => $nama,
-            'Email' => $email,
-            'pesan' => $pesan,
-        ];
-$this->m_pesan->insert_data($data,'pesan');
-  $this->session->set_flashdata('message','<div class="alert alert-success" role="alert">Pesan berhasil dikirim</div>');
-   redirect('admin/dashboard');
-      }
-}
-
-        public function rules()
-        {
-              $this->form_validation->set_rules('nama','nama','trim|required', [
-
-                'required' => 'Nama harus di isi!'
-        ]);
-
-            $this->form_validation->set_rules('Email','Email','trim|required|valid_email', [
-
-                'required' => 'Email harus di isi!'
-        ]);
-
-        $this->form_validation->set_rules('pesan','Pesan','trim|required', [
-                'required' => 'Pesan harus di isi!'
-
-        ]);
+            $data =
+                [
+                    'nama' => $nama,
+                    'Email' => $email,
+                    'pesan' => $pesan,
+                ];
+            $this->m_pesan->insert_data($data, 'pesan');
+            $this->session->set_flashdata('message', '<div class="alert alert-success" role="alert">Pesan berhasil dikirim</div>');
+            redirect('admin/dashboard');
         }
+    }
+
+    public function rules()
+    {
+        $this->form_validation->set_rules('nama', 'nama', 'trim|required', [
+
+            'required' => 'Nama harus di isi!'
+        ]);
+
+        $this->form_validation->set_rules('Email', 'Email', 'trim|required|valid_email', [
+
+            'required' => 'Email harus di isi!'
+        ]);
+
+        $this->form_validation->set_rules('pesan', 'Pesan', 'trim|required', [
+            'required' => 'Pesan harus di isi!'
+
+        ]);
+    }
 
 
-          public function hapus($id_pesan)
-{
-    $where = array ('id_pesan' => $id_pesan);
-    $this->m_pesan->hapus_data($where, 'pesan');
-         $this->session->set_flashdata('message','<div class="alert alert-danger" role="alert">Memo Berhasil dihapus</div>');
-    redirect('admin/dashboard');
-   
-}
+    public function hapus($id_pesan)
+    {
+        $where = array('id_pesan' => $id_pesan);
+        $this->m_pesan->hapus_data($where, 'pesan');
+        $this->session->set_flashdata('message', '<div class="alert alert-danger" role="alert">Memo Berhasil dihapus</div>');
+        redirect('admin/dashboard');
+    }
+    public function get_notif()
+    {
+        $this->db->select('COUNT(id_mhs) as jumlah')->from('form_mahasiswa');
+        $this->db->where("status", 0);
+        $data = $this->db->get()->row_array();
+        echo json_encode($data);
+    }
 }
 
 
